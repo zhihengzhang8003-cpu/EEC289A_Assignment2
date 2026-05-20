@@ -1,0 +1,11 @@
+artifacts/
+data/
+__pycache__/
+*.pyc
+*.pyo
+*.npy
+*.pt
+*.ckpt
+.ipynb_checkpoints/
+.pytest_cache/
+.DS_Store
