@@ -235,5 +235,5 @@
     "warmup_steps": 10
   },
   "model": "student",
-  "updates": 24000
+  "updates": 36000
 }
