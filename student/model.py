@@ -83,6 +83,12 @@ class StudentWorldModel(nn.Module):
         # normalization constants.
         self.pos_cart = nn.Linear(2, 1)   # d_cart_pos   <- [cart_vel, d_cart_vel]
         self.pos_pole = nn.Linear(2, 1)   # d_pole_angle <- [pole_vel, d_pole_vel]
+        # Run 10: softened structure -- learnable small residual on position.
+        # Zero-initialised so behaviour starts identical to pure kinematic integration;
+        # the model can grow it during training to correct small MuJoCo non-linearities.
+        self.pos_residual = nn.Linear(hidden, 2)
+        nn.init.zeros_(self.pos_residual.weight)
+        nn.init.zeros_(self.pos_residual.bias)
 
     def initial_hidden(self, batch_size: int, device: torch.device):
         if self.gru is None:
@@ -108,8 +114,13 @@ class StudentWorldModel(nn.Module):
         d_cart_vel = d_vel[:, 0:1]
         d_pole_vel = d_vel[:, 1:2]
 
-        d_cart_pos = self.pos_cart(torch.cat([cart_vel, d_cart_vel], dim=-1))
-        d_pole_ang = self.pos_pole(torch.cat([pole_vel, d_pole_vel], dim=-1))
+        d_cart_pos_phys = self.pos_cart(torch.cat([cart_vel, d_cart_vel], dim=-1))
+        d_pole_ang_phys = self.pos_pole(torch.cat([pole_vel, d_pole_vel], dim=-1))
+        # Run 10: add small learnable residual on top of kinematic integration.
+        # Zero-init at start, so initial behaviour == pure physics integration.
+        residual = self.pos_residual(feat)
+        d_cart_pos = d_cart_pos_phys + residual[:, 0:1]
+        d_pole_ang = d_pole_ang_phys + residual[:, 1:2]
 
         delta = torch.cat([d_cart_pos, d_pole_ang, d_cart_vel, d_pole_vel], dim=-1)
         return delta, hidden
