@@ -1,13 +1,12 @@
-"""Student world model — Run 7 reproduction (Attempt 2 residual MLP + Attempt 3 KNOBS).
+"""Student world model — Run 42 baseline (starter A2 base, no pos_residual).
 
-Architecture (starter Attempt 2):
-* Drop cart_pos from MLP input (translation invariance)
-* MLP predicts 2 velocity deltas [d_cart_vel, d_pole_vel], tanh-bounded ±5
-* Position deltas via Linear(2,1) on [vel, d_vel] — exact kinematic integration
-* hidden_dim=256, num_layers=3 ResidualBlocks (LayerNorm + SiLU)
+Run 42 achieved VPT80=35 with LR=6.3e-4. This is our new sweep baseline.
 
-KNOBS = Run 7 (Attempt 3):
-  H=20, W=1.0, DISC=0.95, OSW=25, UPDATES=24000, LR=7e-4
+Architecture:
+* Drop cart_pos from MLP input
+* MLP predicts 2 velocity deltas, tanh-bounded ±5
+* Position deltas via Linear(2,1) exact kinematic integration
+* No pos_residual (this is the base Attempt 2 version)
 """
 
 from __future__ import annotations
